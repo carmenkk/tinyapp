@@ -11,17 +11,18 @@
       </div>
     </div>
     <% if(!user) { %>   
-    <form class = "form-inline my-1" action = "/login" method = "POST">
-        <div>
-          <a class="btn btn-primary" href="/login">Login</a>
-          <a class="btn btn-primary" href="/register">Register</a>
+      <div class = "collapse navbar-collapse" id="navbarNavAltMarkup" style="margin-left: 600px">
+        <div class = "navbar-nav" style="margin-left: 300px">
+          <a class="nav-item nav-link" href="/login" >Login</a>
+          <a class="nav-item nav-link" href="/register" ">Register</a>
         </div>
-    </form>
+      </div>
+    
     <% } else { %>
-      <form class = "form-inline my-1" action = "/logout" method = "POST">
+      <form class = "form-inline" action = "/logout" method = "POST">
         <div>
-          Logged In As: <%= user.email %>
-          <button type = "submit" class="btn btn-primary">Logout</button>
+          Logged In As <%=user.email%>
+          <button type = "submit" class="btn btn-outline-dark">Logout</button>
         </div>
     </form>
     <% } %>
