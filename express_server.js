@@ -125,9 +125,13 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/register", (req, res) => {
   let templateVars = {user: req.cookies['user_id']};
   res.render("register", templateVars);
-
-
 });
+
+app.get("/login", (req, res) => {
+  let templateVars = {user: req.cookies['user_id']};
+  res.render("login", templateVars);
+});
+
 
 app.post("/urls/:id", (req, res) => {
   const id = req.params.shortURL;
@@ -136,14 +140,24 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie('user_id',username);
-  res.redirect('/urls');
- 
+  let user = findUser(req.body.email, users);
+  
+  if (user) {
+    if (req.body.password === user.password) {
+      res.cookie('user_id',user);
+      res.redirect('/urls');
+    } else {
+      res.statusCode = 403;
+      res.send('Wrong password. Please enter again.');
+    }
+  } else {
+    res.statusCode = 403;
+    res.send('The email address is not registered.')
+  }
 });
 
 app.post("/logout", (req, res) => {
-  const username = req.body.username;
+  
   res.clearCookie('user_id');
   res.redirect('/urls');
  
