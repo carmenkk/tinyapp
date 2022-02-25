@@ -1,15 +1,16 @@
 const express = require("express");
+const bcrypt = require('bcryptjs');
+const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser');
+//const morgan = require('morgan');
 
 
 const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
-
-const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
-
-const cookieParser = require('cookie-parser');
 app.use(cookieParser());
+//app.use(morgan('dev'));
 
 
 
@@ -18,16 +19,16 @@ const generateRandomString = () => {
   return Math.random().toString(36).substring(2, 8);
 };
 
-const findUser = (email, database) => {
+const findUserByEmail = (email, users) => {
   // loop through the database
-  for (let user in database) {
-      
-      if (email === database[user].email) {
-          return database[user];
+  for (let userId in users) {
+      const user = users[userId]
+      if (email === user.email) {
+          return user;
       }
   }
 
-  return false;
+  return null;
   // and if i find an email that matches THE SAME EMAIL
   // i will return that user.
   // if i find no user i will return null/false/undefined
@@ -166,20 +167,26 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  let user = findUser(req.body.email, users);
+  const email = req.body.email;
+  const password = req.body.password;
+
+  const user = findUserByEmail(email, users);
+  const hashedPassword = bcrypt.hashSync(user.password, 10);
   
-  if (user) {
-    if (req.body.password === user.password) {
-      res.cookie('user_id',user);
-      res.redirect('/urls');
-    } else {
-      res.statusCode = 403;
-      res.send('Wrong password. Please enter again.');
-    }
-  } else {
+  if (!user) {
     res.statusCode = 403;
     res.send('The email address is not registered.')
   }
+  const result = bcrypt.compareSync(password, hashedPassword);
+  console.log(result);
+  if (!result) {
+    res.statusCode = 403;
+    res.send('Wrong password. Please enter again.');
+  }
+  res.cookie('user_id',user.id);
+  res.redirect('/urls');
+    
+  
 });
 
 app.post("/logout", (req, res) => {
@@ -190,15 +197,20 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  let user = findUser(req.body.email, users);
-  if(req.body.email && req.body.password){
+  let userId = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+  let user = findUserByEmail(email, users);
+  if(email && password){
     if (!user) {
-      let userId = generateRandomString();
+      const salt = bcrypt.genSaltSync();
+      const hashedPassword = bcrypt.hashSync(password, salt);
+
       users[userId] = {
       userId,
-      email: req.body.email,
-      password: req.body.password
-    }
+      email: email,
+      password: hashedPassword,
+    };
     res.cookie('user_id', userId); 
     res.redirect('/urls');
     } else {
@@ -211,6 +223,7 @@ app.post("/register", (req, res) => {
     }
 
 });
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
