@@ -56,6 +56,10 @@ app.get("/", (req, res) => {
 
 app.get("/urls", (req, res) => {
   let userId = req.session.userId;
+  if (!userId) {
+    res.statusCode = 403;
+    res.send('Please login your account.');
+  }
   let userUrlData = urlsForUser(userId, urlDatabase);
   const templateVars = { urls: userUrlData , user: users[req.session.userId]};
   res.render("urls_index", templateVars);
@@ -181,27 +185,28 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   let user = findUserByEmail(email, users);
-  if (email && password) {
-    if (!user) {
-      const salt = bcrypt.genSaltSync();
-      const hashedPassword = bcrypt.hashSync(password, salt);
-      const userId = generateRandomString();
-      
-      users[userId] = {
-        userId: userId,
-        email: email,
-        password: hashedPassword,
-      };
-      req.session.userId = userId;
-      res.redirect('/urls');
-    } else {
-      res.statusCode = 400;
-      res.send('You already have an account.');
-    }
-  } else {
+  if (!email || !password) {
     res.statusCode = 400;
     res.send('Please enter valid email or password.');
   }
+
+  if (!user) {
+    const salt = bcrypt.genSaltSync();
+    const hashedPassword = bcrypt.hashSync(password, salt);
+    const userId = generateRandomString();
+      
+    users[userId] = {
+      userId: userId,
+      email: email,
+      password: hashedPassword,
+    };
+    req.session.userId = userId;
+    res.redirect('/urls');
+  } else {
+    res.statusCode = 400;
+    res.send('You already have an account.');
+  }
+  
 
 });
 
