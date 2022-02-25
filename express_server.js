@@ -14,18 +14,9 @@ app.use(cookieParser());
 
 
 // helper functions
-function generateRandomString() {
-  let characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let result = "";
-  let charactersLength = characters.length;
-
-  for ( let i = 0; i < 5 ; i++ ) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-
-  return result;
-
-}
+const generateRandomString = () => {
+  return Math.random().toString(36).substring(2, 8);
+};
 
 const findUser = (email, database) => {
   // loop through the database
@@ -41,12 +32,20 @@ const findUser = (email, database) => {
   // i will return that user.
   // if i find no user i will return null/false/undefined
 }
-/*
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+
+const urlsForUser = (id, urlDatabase) => {
+  let userUrlData = {};
+  for (let shortURL in urlDatabase) {
+    if ( urlDatabase[shortURL].userID === id) {
+      userUrlData[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return userUrlData;
 };
-*/
+  
+
+
+
 
 // database
 
@@ -63,8 +62,8 @@ const urlDatabase = {
 
 
 const users = { 
-  "userRandomID": {
-    id: "userRandomID", 
+  "aJ48lW": {
+    id: "aJ48lW", 
     email: "user@example.com", 
     password: "purple-monkey-dinosaur"
   },
@@ -86,28 +85,19 @@ app.get("/", (req, res) => {
   res.redirect("/login")
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  const templateVars = { greeting: 'Hello World!' };
-  res.render("hello_world", templateVars);
-});
-
-
-app.get("/set", (req, res) => {
-  const a = 1;
-  res.send(`a = ${a}`);
- });
- 
- app.get("/fetch", (req, res) => {
-  res.send(`a = ${a}`);
- });
 
  app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase , user: req.cookies["user_id"]};
-  res.render("urls_index", templateVars);
+  let userId = req.cookies["user_id"].id;
+  let userUrlData = urlsForUser( userId, urlDatabase);
+  const templateVars = { urls: userUrlData , user: req.cookies["user_id"]};
+  if (req.cookies["user_id"]) {
+    
+    
+    res.render("urls_index", templateVars);
+  }
+  res.statusCode = 401;
+  res.send("Please login your account");
+
   
 });
 
@@ -130,8 +120,17 @@ app.get("/urls/:id", (req, res) => {
 
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
-  urlDatabase[shortURL].longURL = req.body.longURL;
-  res.redirect(`/urls/:${shortURL}`);       
+  let website = req.body.longURL;
+  let userId = req.cookies["user_id"].id;
+  
+
+  
+  urlDatabase[shortURL] = {
+    longURL: website,
+    userID: userId
+  };
+  res.redirect(`/urls/:${shortURL}`);  
+  console.log(urlDatabase);     
 });
 
 
