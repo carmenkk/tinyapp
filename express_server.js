@@ -14,7 +14,7 @@ app.use(cookieSession({
 }));
 
 
-// database
+//// database////
 
 const urlDatabase = {
   b6UTxQ: {
@@ -43,7 +43,7 @@ const users = {
 
 
 
-// routes
+//// routes ////
 
 app.get("/", (req, res) => {
   const userId = req.session.userId;
@@ -71,6 +71,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+
 app.get("/urls/:id", (req, res) => {
   const user = users[req.session.userId];
   
@@ -97,6 +98,13 @@ app.get("/urls/:id", (req, res) => {
   
 });
 
+app.get("/u/:id", (req, res) => {
+ 
+  const longURL = urlDatabase[req.params.id].longURL;
+  res.redirect(longURL);
+ 
+});
+
 
 app.post("/urls", (req, res) => {
   if (req.session.userId) {
@@ -116,6 +124,12 @@ app.post("/urls", (req, res) => {
 });
 
 
+app.post("/urls/:id", (req, res) => {
+  const shortURL = req.params.id;
+  urlDatabase[shortURL].longURL = req.body.updatedURL;
+  res.redirect(`/urls`);
+});
+
 
 app.post("/urls/:id/delete", (req, res) => {
   const shortURL = req.params.id;
@@ -124,17 +138,7 @@ app.post("/urls/:id/delete", (req, res) => {
 
 });
 
-app.get("/u/:id", (req, res) => {
- 
-  const longURL = urlDatabase[req.params.id].longURL;
-  res.redirect(longURL);
- 
-});
 
-app.get("/register", (req, res) => {
-  let templateVars = {user: users[req.session.userId]};
-  res.render("register", templateVars);
-});
 
 app.get("/login", (req, res) => {
   let templateVars = {user: req.session.userId};
@@ -142,11 +146,11 @@ app.get("/login", (req, res) => {
 });
 
 
-app.post("/urls/:id", (req, res) => {
-  const shortURL = req.params.id;
-  urlDatabase[shortURL].longURL = req.body.updatedURL;
-  res.redirect(`/urls`);
+app.get("/register", (req, res) => {
+  let templateVars = {user: users[req.session.userId]};
+  res.render("register", templateVars);
 });
+
 
 app.post("/login", (req, res) => {
   const email = req.body.email;
@@ -171,12 +175,6 @@ app.post("/login", (req, res) => {
   
 });
 
-app.post("/logout", (req, res) => {
-  
-  req.session = null;
-  res.redirect('/urls');
- 
-});
 
 app.post("/register", (req, res) => {
   
@@ -206,6 +204,15 @@ app.post("/register", (req, res) => {
   }
 
 });
+
+
+app.post("/logout", (req, res) => {
+  
+  req.session = null;
+  res.redirect('/urls');
+ 
+});
+
 
 
 app.listen(PORT, () => {
