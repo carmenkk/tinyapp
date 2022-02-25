@@ -2,9 +2,10 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
+const { generateRandomString, findUserByEmail, urlsForUser } = require('./helpers');
 
 const app = express();
-const PORT = 8080; 
+const PORT = 8080;
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
@@ -13,66 +14,32 @@ app.use(cookieSession({
 }));
 
 
-
-
-// helper functions
-const generateRandomString = () => {
-  return Math.random().toString(36).substring(2, 8);
-};
-
-const findUserByEmail = (email, users) => {
-  // loop through the database
-  for (let userId in users) {
-      const user = users[userId]
-      if (email === user.email) {
-          return user;
-      }
-  }
-
-  return false;
-
-}
-
-const urlsForUser = (id, urlDatabase) => {
-  let userUrlData = {};
-  for (let shortURL in urlDatabase) {
-    if ( urlDatabase[shortURL].userID === id) {
-      userUrlData[shortURL] = urlDatabase[shortURL];
-    }
-  }
-  return userUrlData;
-};
-  
-
-
-
-
 // database
 
 const urlDatabase = {
   b6UTxQ: {
-      longURL: "https://www.tsn.ca",
-      userID: "aJ48lW"
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW"
   },
   i3BoGr: {
-      longURL: "https://www.google.ca",
-      userID: "aJ48lW"
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW"
   }
 };
 
 
-const users = { 
+const users = {
   "aJ48lW": {
-    id: "aJ48lW", 
-    email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    id: "aJ48lW",
+    email: "user@example.com",
+    password: "01234"
   },
   "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
-    password: "dishwasher-funk"
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "56789"
   }
-}
+};
 
 
 
@@ -82,14 +49,14 @@ app.get("/", (req, res) => {
   const userId = req.session.userId;
   if (userId) {
     res.redirect("/urls");
-  } 
-  res.redirect("/login")
+  }
+  res.redirect("/login");
 });
 
 
- app.get("/urls", (req, res) => {
+app.get("/urls", (req, res) => {
   let userId = req.session.userId;
-  let userUrlData = urlsForUser( userId, urlDatabase);
+  let userUrlData = urlsForUser(userId, urlDatabase);
   const templateVars = { urls: userUrlData , user: users[req.session.userId]};
   res.render("urls_index", templateVars);
 });
@@ -98,7 +65,7 @@ app.get("/", (req, res) => {
 app.get("/urls/new", (req, res) => {
   
   if (!req.session.userId) {
-    res.redirect("/login")
+    res.redirect("/login");
   }
   const templateVars = {user: users[req.session.userId]};
   res.render("urls_new", templateVars);
@@ -109,24 +76,24 @@ app.get("/urls/:id", (req, res) => {
   
   if (!user) {
     res.statusCode = 403;
-    res.send('Please login your account')
+    res.send('Please login your account');
   }
   let shortURL = urlDatabase[req.params.id];
   if (shortURL) {
     
     if (shortURL.userID === req.session.userId) {
-      const templateVars = { 
-      shortURL: req.params.id, 
-      longURL:urlDatabase[req.params.id].longURL, 
-      user: users[req.session.userId],
-    };
-    res.render("urls_show", templateVars);
-   }
+      const templateVars = {
+        shortURL: req.params.id,
+        longURL:urlDatabase[req.params.id].longURL,
+        user: users[req.session.userId],
+      };
+      res.render("urls_show", templateVars);
+    }
    
-}
+  }
   
-res.status = 404;
-res.send('Error: wrong id.');
+  res.status = 404;
+  res.send('Error: wrong id.');
   
 });
 
@@ -144,7 +111,7 @@ app.post("/urls", (req, res) => {
     console.log(urlDatabase);
   }
   res.statusCode = 401;
-  res.send('Please login your account.')
+  res.send('Please login your account.');
     
 });
 
@@ -178,7 +145,7 @@ app.get("/login", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
   urlDatabase[shortURL].longURL = req.body.updatedURL;
-  res.redirect(`/urls`)
+  res.redirect(`/urls`);
 });
 
 app.post("/login", (req, res) => {
@@ -190,7 +157,7 @@ app.post("/login", (req, res) => {
   
   if (!user) {
     res.statusCode = 403;
-    res.send('The email address is not registered.')
+    res.send('The email address is not registered.');
   }
   const result = bcrypt.compareSync(password, hashedPassword);
   
@@ -216,27 +183,27 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   let user = findUserByEmail(email, users);
-  if(email && password){
+  if (email && password) {
     if (!user) {
       const salt = bcrypt.genSaltSync();
       const hashedPassword = bcrypt.hashSync(password, salt);
       const userId = generateRandomString();
       
       users[userId] = {
-      userId: userId,
-      email: email,
-      password: hashedPassword,
-    };
-    req.session.userId = userId;
-    res.redirect('/urls');
+        userId: userId,
+        email: email,
+        password: hashedPassword,
+      };
+      req.session.userId = userId;
+      res.redirect('/urls');
     } else {
       res.statusCode = 400;
-      res.send('You already have an account.')
+      res.send('You already have an account.');
     }
   } else {
-      res.statusCode = 400;
-      res.send('Please enter valid email or password.')
-    }
+    res.statusCode = 400;
+    res.send('Please enter valid email or password.');
+  }
 
 });
 
