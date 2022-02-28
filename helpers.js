@@ -1,11 +1,13 @@
+// generate six random alphanumeric characters for shortURL
 const generateRandomString = () => {
   return Math.random().toString(36).substring(2, 8);
 };
 
+
 const findUserByEmail = (email, users) => {
   // loop through the database
-  for (let userId in users) {
-    const user = users[userId];
+  for (let userID in users) {
+    const user = users[userID];
     if (email === user.email) {
       return user;
     }
