@@ -19,6 +19,7 @@ app.use(cookieSession({
 
 //// routes ////
 
+//if logged in,redirect to /urls; otherwise to /login
 app.get("/", (req, res) => {
   const userId = req.session.userId;
   if (userId) {
@@ -31,16 +32,12 @@ app.get("/", (req, res) => {
 
 app.get("/urls", (req, res) => {
   let userId = req.session.userId;
-  //if (!userId) {
-  //  res.statusCode = 403;
-   // res.send('Please login your account.');
-  //}
   let userUrlData = urlsForUser(userId, urlDatabase);
   const templateVars = { urls: userUrlData , user: users[req.session.userId]};
   res.render("urls_index", templateVars);
 });
 
-
+//if account is not loggin, redirect /login
 app.get("/urls/new", (req, res) => {
   
   if (!req.session.userId) {
@@ -135,8 +132,8 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
 
   const user = findUserByEmail(email, users);
-  //const hashedPassword = bcrypt.hashSync(user.password, 10);
   const result = bcrypt.compareSync(password,user.password);
+
   if (user && result) {
     req.session.userId = user.userId;
     console.log(req.session.userId);
@@ -162,10 +159,8 @@ app.post("/register", (req, res) => {
   if (!email || !password) {
     res.statusCode = 400;
     res.send('Please enter valid email or password.');
-  }
-
-  if (!user) {
-    //const salt = bcrypt.genSaltSync();
+  }  else if (!user) {
+    
     const hashedPassword = bcrypt.hashSync(password, 10);
     const userId = generateRandomString();
       
@@ -173,11 +168,13 @@ app.post("/register", (req, res) => {
       userId: userId,
       email: email,
       password: hashedPassword,
+      
     };
+
     req.session.userId = userId;
     res.redirect('/urls');
     console.log(users);
-  } else {
+  } else if (user) {
     res.statusCode = 400;
     res.send('You already have an account.');
   }
