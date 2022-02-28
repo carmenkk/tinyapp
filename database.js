@@ -13,7 +13,7 @@ const users = {
   "aJ48lW": {
     userId: "aJ48lW", //change id to uerId
     email: "user@example.com",
-    password: "$2a$10$JvnFAGTEvP8M0v.6oUgSWOm/NboOZtI7tG943VXxaHf1kHd47O032" 
+    password: "$2a$10$JvnFAGTEvP8M0v.6oUgSWOm/NboOZtI7tG943VXxaHf1kHd47O032"
     //actual password :01234
   },
   "34JMR": {
@@ -27,4 +27,4 @@ const users = {
 module.exports = {
   urlDatabase,
   users,
-}
+};
