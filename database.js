@@ -9,17 +9,18 @@ const urlDatabase = {
   }
 };
 
-
 const users = {
   "aJ48lW": {
-    id: "aJ48lW",
+    userId: "aJ48lW", //change id to uerId
     email: "user@example.com",
-    password: "01234"
+    password: "$2a$10$JvnFAGTEvP8M0v.6oUgSWOm/NboOZtI7tG943VXxaHf1kHd47O032" 
+    //actual password :01234
   },
-  "user2RandomID": {
-    id: "user2RandomID",
+  "34JMR": {
+    userId: "34JMR",
     email: "user2@example.com",
-    password: "56789"
+    password: "$2a$10$nYhsDacOc5I7miLN/jlUluP12pk0V8qMkwhycYaWifEeTEADu0pZO"
+    //actual password :56789
   }
 };
 
