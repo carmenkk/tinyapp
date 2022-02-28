@@ -132,23 +132,46 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
 
   const user = findUserByEmail(email, users);
-  const result = bcrypt.compareSync(password,user.password);
-
-  if (user && result) {
-    req.session.userId = user.userId;
-    console.log(req.session.userId);
-    res.redirect('/urls');
-  } else if (!user) {
+  
+  
+  if (user) {
+    if (bcrypt.compareSync(password,user.password)) {
+      req.session.userId = user.userId;
+      res.redirect('/urls');
+    } else {
+      res.statusCode = 403;
+      res.send('Wrong password. Please enter again.');
+    }
+  } else {
+    res.statusCode = 403;
+    res.send('The email address is not registered.')
+  }
+});
+/*
+  if (!user) {
     res.statusCode = 403;
     res.send('The email address is not registered.');
-  } else if (!result) {
+
+  }
+  if (user.email && result) {
+    
+  } else {
+    res.statusCode = 403;
+    res.send('The email address is not registered.');
+  }
+  */
+  /*
+  if (!user.email && !result) {
+    res.statusCode = 403;
+    res.send('The email address is not registered.');
+  } else if (user.email && !result) {
     res.statusCode = 403;
     res.send('Wrong password. Please enter again.');
   }
-  
+  */
    
   
-});
+
 
 
 app.post("/register", (req, res) => {
