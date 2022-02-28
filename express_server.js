@@ -67,7 +67,7 @@ app.get("/urls/:id", (req, res) => {
       res.render("urls_show", templateVars);
     }
    
-  }  
+  }
   res.status = 404;
   res.send('Error: wrong id.');
   
@@ -144,35 +144,9 @@ app.post("/login", (req, res) => {
     }
   } else {
     res.statusCode = 403;
-    res.send('The email address is not registered.')
+    res.send('The email address is not registered.');
   }
 });
-/*
-  if (!user) {
-    res.statusCode = 403;
-    res.send('The email address is not registered.');
-
-  }
-  if (user.email && result) {
-    
-  } else {
-    res.statusCode = 403;
-    res.send('The email address is not registered.');
-  }
-  */
-  /*
-  if (!user.email && !result) {
-    res.statusCode = 403;
-    res.send('The email address is not registered.');
-  } else if (user.email && !result) {
-    res.statusCode = 403;
-    res.send('Wrong password. Please enter again.');
-  }
-  */
-   
-  
-
-
 
 app.post("/register", (req, res) => {
   
@@ -186,7 +160,7 @@ app.post("/register", (req, res) => {
     
     const hashedPassword = bcrypt.hashSync(password, 10);
     const userId = generateRandomString();
-      
+  
     users[userId] = {
       userId: userId,
       email: email,
